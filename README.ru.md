@@ -42,38 +42,47 @@ A surreal pop-art portrait of a woman in {scarlet poppies\, crimson gown…, gol
 
 ---
 
-## ⚙️ Установка (60 секунд)
+## ⚙️ Установка — выбери способ
 
-### 1. Поставь Claude Code
+### 🅰️ Одной командой (Claude Code, терминал)
 
 ```bash
-npm install -g @anthropic-ai/claude-code
+curl -fsSL https://raw.githubusercontent.com/georgespelllens/mj-agent/main/install.sh | bash
 ```
 
-Полный гайд: [claude.com/claude-code](https://claude.com/claude-code)
+Готово. Скрипт кладёт `SKILL.md` в `~/.claude/skills/mj-agent/`. Перезапусти Claude Code — и скилл активен.
 
-### 2. Положи скилл на место
+> **Нет Claude Code?** Сначала поставь его: `npm install -g @anthropic-ai/claude-code`, потом выполни команду выше.
+
+### 🅱️ Drag & drop в Claude.ai (веб / десктоп)
+
+Если ты пользуешься **Claude.ai** (браузер или десктоп-приложение, не CLI):
+
+1. Скачай свежий [`mj-agent.zip`](https://github.com/georgespelllens/mj-agent/releases/latest/download/mj-agent.zip) из Releases
+2. Открой Claude.ai → **Settings → Capabilities → Skills → Upload skill**
+3. Перетащи zip
+4. Готово — скилл срабатывает в любом чате и проекте
+
+### 🅲️ Ручная установка
 
 ```bash
+git clone https://github.com/georgespelllens/mj-agent.git
 mkdir -p ~/.claude/skills/mj-agent
-curl -o ~/.claude/skills/mj-agent/SKILL.md \
-  https://raw.githubusercontent.com/georgespelllens/mj-agent/main/SKILL.md
+cp mj-agent/SKILL.md ~/.claude/skills/mj-agent/
 ```
 
-### 3. Используй
+---
 
-```bash
-claude
-```
+## 🚀 Попробуй
 
-В любой сессии:
+После установки — перезапусти Claude Code (или открой новый чат в Claude.ai), и:
 
 ```
 [вставь свой MJ-промпт]
 сделай вариации
 ```
 
-Скилл срабатывает автоматически. Работает в любой рабочей папке — он установлен глобально.
+Скилл срабатывает автоматически. Работает во всех сессиях, проектах и рабочих папках.
 
 ---
 

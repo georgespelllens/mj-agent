@@ -42,38 +42,47 @@ Paste into Discord MJ, hit Yes on confirmation — 10 jobs run at once.
 
 ---
 
-## ⚙️ Install (60 seconds)
+## ⚙️ Install — pick your method
 
-### 1. Get Claude Code
+### 🅰️ One-line install (Claude Code, terminal)
 
 ```bash
-npm install -g @anthropic-ai/claude-code
+curl -fsSL https://raw.githubusercontent.com/georgespelllens/mj-agent/main/install.sh | bash
 ```
 
-Full guide: [claude.com/claude-code](https://claude.com/claude-code)
+That's it. The script puts `SKILL.md` into `~/.claude/skills/mj-agent/`. Restart Claude Code and it activates.
 
-### 2. Drop the skill in place
+> **Don't have Claude Code yet?** Install with `npm install -g @anthropic-ai/claude-code` first, then run the line above.
+
+### 🅱️ Drag & drop into Claude.ai (web/desktop)
+
+If you use **Claude.ai** (browser or desktop app, not the CLI):
+
+1. Download the latest [`mj-agent.zip`](https://github.com/georgespelllens/mj-agent/releases/latest/download/mj-agent.zip) from Releases
+2. Open Claude.ai → **Settings → Capabilities → Skills → Upload skill**
+3. Drag the zip in
+4. Done — skill triggers in any chat or project
+
+### 🅲️ Manual install
 
 ```bash
+git clone https://github.com/georgespelllens/mj-agent.git
 mkdir -p ~/.claude/skills/mj-agent
-curl -o ~/.claude/skills/mj-agent/SKILL.md \
-  https://raw.githubusercontent.com/georgespelllens/mj-agent/main/SKILL.md
+cp mj-agent/SKILL.md ~/.claude/skills/mj-agent/
 ```
 
-### 3. Use it
+---
 
-```bash
-claude
-```
+## 🚀 Try it
 
-Then in any session:
+After install — restart Claude Code (or open a new chat in Claude.ai), then:
 
 ```
 [paste your MJ prompt]
 сделай вариации
 ```
 
-The skill triggers automatically. Works in any working directory — it's globally installed.
+The skill triggers automatically. Works globally across any session, any project, any directory.
 
 ---
 
