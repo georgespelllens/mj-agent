@@ -203,8 +203,11 @@ Fork it and tune it for your own creative pipeline.
 
 ## 👤 Author
 
-[@georgespelllens](https://github.com/georgespelllens) — designer, MJ daily user.
-[Telegram channel](https://t.me/) — RU posts about AI design workflows.
+**Lev Bakharev** — designer, MJ daily user.
+
+- 💬 Telegram: [@aidalev](https://t.me/aidalev) — RU posts about AI design workflows
+- 🐦 X / Twitter: [@lionopus](https://x.com/lionopus)
+- 🐙 GitHub: [@georgespelllens](https://github.com/georgespelllens)
 
 ---
 
