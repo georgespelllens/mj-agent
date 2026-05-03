@@ -1,5 +1,7 @@
 # 🎨 mj-agent
 
+**English** · [Русский](./README.ru.md)
+
 **Turn one Midjourney prompt into 10 Discord-ready variations.**
 A Claude Code skill that knows how to batch-generate prompts and pack them into `{}` permutations for one-shot `/imagine` runs.
 

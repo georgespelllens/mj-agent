@@ -1,89 +1,111 @@
 ---
 name: mj-agent
-description: Midjourney prompt builder. Use when user asks to generate variations of an MJ prompt, build themed batches of 10 prompts, pack lists into Discord-ready permutation `{}` commands, split too-long permutations, or compare model versions side-by-side. Triggers in Russian and English. Triggers include "сделай вариации", "сделай батч", "промпты для midjourney", "промпты для миджорни", "разбей на части", "пермутации", "MJ-промпты", "midjourney prompts", "variations of this prompt", "batch of 10".
+description: Midjourney prompt builder. Use when user asks to generate variations of an MJ prompt, build themed batches of 10 prompts, pack lists into Discord-ready permutation `{}` commands, split too-long permutations, or compare model versions side-by-side. Triggers in Russian and English. EN triggers - "make variations", "batch of 10", "midjourney prompts", "pack into permutations", "split this", "compare versions". RU triggers - "сделай вариации", "сделай батч", "промпты для midjourney", "промпты для миджорни", "разбей на части", "пермутации", "MJ-промпты", "упакуй в пермутации", "сравни v7 и v8.1".
 ---
 
 # MJ-agent — Midjourney prompt builder
 
-## Контекст
+## Context
 
-Скилл-помощник для тех, кто работает с Midjourney через Discord и хочет:
-1. Быстро получать 10+ вариаций на основе одного промпта
-2. Упаковывать партии промптов в `{}`-permutations для одной `/imagine` команды
-3. Разбивать слишком длинные permutations, которые не влезают в Discord
+A skill-helper for designers and AI artists who work with Midjourney through Discord and want to:
+1. Quickly generate 10+ variations from a single prompt
+2. Pack batches of prompts into `{}`-permutations for one-shot `/imagine` runs
+3. Split overlong permutations that don't fit Discord's character limit
+
+## Language behavior
+
+- **Detect the user's input language and respond in that language** (Russian input → Russian response, English input → English response)
+- **The MJ prompts themselves should always be in English** (Midjourney's training is English-dominant, English prompts produce better results regardless of user's chat language)
+- The skill triggers on phrases in either language — see `description:` above
 
 ## Workflow 1: Generate Variations
 
-**Триггер:** пользователь скидывает один полный промпт + просит "сделай 10 вариаций" / "вариации" / "batch на основе этого".
+**Trigger:** user drops a full prompt + asks for "make variations" / "сделай 10 вариаций" / "batch from this".
 
-**Действия:**
-1. Распарсить промпт на: `core` (субъект и идея), `details` (одежда, поза, свет, фон), `suffix` (--ar, --v, --profile, --stylize, --raw)
-2. Сохранить **структуру и суффикс** ровно как в исходнике
-3. Варьировать по умолчанию: **окружение / цветовая палитра / типаж субъекта / поза / свет / художественные референсы**. Если пользователь указал ось вариации — варьировать только её.
-4. Сгенерировать **10 вариаций** одинаковой длины и стилистической плотности что и оригинал
-5. Выдать в **двух форматах** в одном ответе:
-   - **RAW:** 10 строк в одном code-блоке, по строке = один полный промпт с суффиксом (для построчной автоматизации)
-   - **PERMUTATION:** одна или несколько `/imagine` команд с `{}`-пермутациями. Запятые внутри экранировать через `\,`. Подбирать размер пакета по длине (см. ниже).
+**Steps:**
+1. Parse the prompt into: `core` (subject + idea), `details` (clothing, pose, lighting, background), `suffix` (--ar, --v, --profile, --stylize, --raw)
+2. Preserve **structure and suffix exactly** as in the original
+3. By default vary along: **environment / color palette / subject archetype / pose / lighting / artist references**. If user specified an axis to vary — vary only that.
+4. Generate **10 variations** matching the original's length and stylistic density
+5. Output in **two formats** in a single response:
+   - **RAW:** 10 lines in one code block, one full prompt with suffix per line (for line-by-line automators)
+   - **PERMUTATION:** one or more `/imagine` commands with `{}`-permutations. Escape commas inside variants with `\,`. Choose batch size by length (see Workflow 3 sizing rules).
 
-**Не делать:** не уточнять что варьировать, если пользователь молчит — выбирай ось сам.
+**Don't ask** what to vary if the user didn't specify — just pick a reasonable axis.
 
 ## Workflow 2: Themed Batch
 
-**Триггер:** пользователь называет тему/направление ("сделай батч девушек в боудуарной эстетике", "что есть с архитектурой") + не даёт конкретный промпт.
+**Trigger:** user names a theme/direction ("make a batch of women in boudoir aesthetic", "what about architecture") without giving a specific prompt.
 
-**Действия:**
-1. Сгенерировать **5 батчей × 10 пермутаций** в формате `{a, b, c, d, e} × {x, y}` через permutation-структуру, или 5 групп по 10 raw-строк.
-2. Использовать профиль/параметры если пользователь их раньше указывал в этой сессии.
+**Steps:**
+1. Generate **5 batches × 10 permutations** in `{a, b, c, d, e} × {x, y}` format, or 5 groups of 10 raw lines.
+2. Use the user's profile/parameters if they were specified earlier in the session.
 
 ## Workflow 3: Pack into Permutation Commands
 
-**Триггер:** пользователь скидывает список готовых промптов и просит "упакуй в пермутации" / "сделай чтобы можно было через `{}`".
+**Trigger:** user drops a list of ready prompts and asks "pack into permutations" / "упакуй в пермутации" / "make it work via `{}`".
 
-**Действия:**
-1. Сгруппировать промпты по **общему MJ-суффиксу** (одинаковые `--ar`, `--v`, `--profile`, `--stylize`).
-2. Внутри группы экранировать все запятые в текстовой части через `\,`
-3. Склеить через `, ` снаружи: `{prompt1\, with\, commas, prompt2\, also\, with\, commas} --suffix`
-4. Соблюдать **размер пакета по длине**:
-   - Жирные cinematic-промпты (>100 слов) — **по 2 в одной команде**
-   - Средние (50-100 слов) — **по 4-5**
-   - Короткие (<50 слов) — **до 10**
-   - Discord-сообщение лимит ~2000 символов, экранирование `\,` раздувает текст
-5. По возможности использовать **трюк с общим префиксом/суффиксом**: если у всех промптов есть одинаковая часть текста (например стилевой суп `art by X, Y, Z`), вынести её ЗА `{}` — это сильно сокращает длину команды и позволяет упаковать больше jobs в одну `/imagine`.
+**Steps:**
+1. Group prompts by **shared MJ suffix** (matching `--ar`, `--v`, `--profile`, `--stylize`).
+2. Inside each group, escape all commas in the text with `\,`
+3. Join with `, ` outside: `{prompt1\, with\, commas, prompt2\, also\, with\, commas} --suffix`
+4. Respect **batch size by length:**
+   - **Heavy cinematic prompts (>100 words)** — 2 per command
+   - **Medium prompts (50-100 words)** — 4-5 per command
+   - **Short prompts (<50 words)** — up to 10 per command
+   - Discord message limit is ~2000 characters, escaping with `\,` inflates the text
+5. Whenever possible use the **shared prefix/suffix trick**: if all prompts have an identical text segment (e.g. style soup `art by X, Y, Z`), move it OUTSIDE `{}` — this dramatically shortens the command and lets you fit more jobs per `/imagine`.
 
 ## Workflow 4: Split Too-Long Permutation
 
-**Триггер:** пользователь скидывает свою permutation-команду и говорит "слишком длинная" / "разбей на части".
+**Trigger:** user shares their permutation command and says "too long" / "слишком длинная" / "split this".
 
-**Действия:**
-1. Разобрать `{a, b, c, d, e}` обратно на массив промптов
-2. Распилить пополам (или на 3-4 части) тематически — близкие концепты в одной части
-3. Каждой части дать тот же общий суффикс
-4. Вернуть как несколько `{}` команд
+**Steps:**
+1. Parse `{a, b, c, d, e}` back into an array of prompts
+2. Split in half (or into 3-4 chunks) thematically — group close concepts together
+3. Apply the same shared suffix to each chunk
+4. Return as multiple `{}` commands
 
 ## Workflow 5: Version A/B Compare
 
-**Триггер:** "сравни v7 и v8.1", "разница между моделями", "А/Б тест".
+**Trigger:** "compare v7 and v8.1" / "сравни v7 и v8.1" / "model A/B test".
 
-**Действие:** взять промпт и обернуть `--v` в пермутацию: `<prompt> --v {7, 8.1}` или `<prompt> --v {6.1, 7, 8.1}`. Это model-agnostic фича MJ permutations.
+**Action:** wrap `--v` in a permutation: `<prompt> --v {7, 8.1}` or `<prompt> --v {6.1, 7, 8.1}`. This is a model-agnostic feature of MJ permutations.
 
 ---
 
-## Правила
+## Rules
 
-- **Не задавать confirmation-вопросов** — делать сразу.
-- **Не дублировать оригинальный промпт пользователя в выводе** если он только что его скинул — он его и так знает.
-- **Сохранять суффикс ровно** — не подменять `--v`/`--profile`/`--stylize` без явной просьбы.
-- **Permutation в Discord:** Basic 4 jobs, Standard 10, Pro/Mega 40 — но это **по jobs**, а не по длине строки. По длине лимит ~2000 chars сообщения.
-- **`"кавычки"`** — v8.1 syntax для читаемого текста в сцене. Использовать когда нужна типографика (вывески, постеры, упаковка).
-- **Запятые внутри `{}`-permutation экранировать через `\,`** — это критично, иначе MJ интерпретирует их как разделители вариантов.
-- **Уметь работать с RU и EN** — если пользователь пишет на русском, отвечать на русском (но сами промпты для MJ — на английском).
+- **Don't ask confirmation questions** — just do the work
+- **Don't echo the user's original prompt back** if they just shared it — they already have it
+- **Preserve the suffix exactly** — don't swap `--v` / `--profile` / `--stylize` without an explicit request
+- **Permutation limits in Discord:** Basic 4 jobs / Standard 10 / Pro/Mega 40 — but this counts **jobs**, not characters. Discord's per-message length limit (~2000 chars) is a separate constraint.
+- **`"quoted text"`** — v8.1 syntax for legible text inside scenes. Use when typography matters (signage, posters, packaging).
+- **Escape commas inside `{}`-permutations with `\,`** — critical, otherwise MJ interprets them as variant separators.
+- **Bilingual fluency** — respond in user's input language, but always write MJ prompts in English.
 
-## Пример вызова
+## Example invocations
 
-User: "сделай вариации этого промпта: a portrait of a woman in red dress, golden hour, --ar 4:5"
+### English user
 
-Ответ:
-1. **RAW** — 10 вариаций по строке с тем же суффиксом
-2. **PERMUTATION** — одна или две `{}`-команды для Discord
+```
+User: "make 10 variations of this:
+A portrait of a woman in red dress, golden hour, --ar 4:5"
 
-Каждая вариация меняет одно или несколько измерений (цвет платья, время суток, тип света, стиль художника, локацию, типаж модели) сохраняя структуру и суффикс оригинала.
+Response:
+1. RAW — 10 variations as separate lines with the same suffix
+2. PERMUTATION — one or two {} commands for Discord
+```
+
+### Russian user
+
+```
+User: "сделай вариации этого промпта:
+A portrait of a woman in red dress, golden hour, --ar 4:5"
+
+Response (in Russian, but MJ prompts in English):
+1. RAW — 10 строк с тем же суффиксом
+2. PERMUTATION — одна-две {} команды для Discord
+```
+
+Each variation changes one or more dimensions (dress color, time of day, light type, artist style, location, model archetype) while preserving the original's structure and suffix.

@@ -3,6 +3,7 @@
 *.swo
 .idea/
 .vscode/
+.claude/
 node_modules/
 __pycache__/
 *.pyc
